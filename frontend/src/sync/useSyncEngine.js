@@ -3,7 +3,7 @@ import { db } from '../db/db';
 import { SEED_CROPS, SEED_WORKERS, SEED_JOBS } from '../db/seedData';
 
 export const useSyncEngine = () => {
-  const [isOnline, setIsOnline] = useState(true);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [syncing, setSyncing] = useState(false);
   const [lastSyncTime, setLastSyncTime] = useState(new Date().toLocaleTimeString());
   const [toast, setToast] = useState(null);
@@ -18,7 +18,6 @@ export const useSyncEngine = () => {
   // Developer Simulation states
   const simulateLatency = 1500; // ms
   const forceServerError = false;
-  const [blockNetwork, setBlockNetwork] = useState(false);
   
   const [consoleLogs, setConsoleLogs] = useState([
     { id: 1, time: new Date().toLocaleTimeString(), type: 'info', text: 'IndexedDB persistent engine initialized via Dexie.js' },
@@ -94,7 +93,7 @@ export const useSyncEngine = () => {
   };
 
   const triggerSync = async () => {
-    const currentConnection = isOnline && !blockNetwork;
+    const currentConnection = isOnline;
     if (!currentConnection || syncQueue.length === 0) return;
     
     setSyncing(true);
@@ -156,13 +155,13 @@ export const useSyncEngine = () => {
       harvest_date: cropData.harvestDate,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      sync_status: (isOnline && !blockNetwork) ? "synced" : "pending_create"
+      sync_status: isOnline ? "synced" : "pending_create"
     };
 
     await db.crops.add(newCrop);
     logSystem('success', `Crop Listing "${cropData.name}" saved persistently in IndexedDB.`);
 
-    if (!isOnline || blockNetwork) {
+    if (!isOnline) {
       await db.sync_queue.add({
         action: 'CREATE',
         entity_type: 'crops',
@@ -189,13 +188,13 @@ export const useSyncEngine = () => {
       status: "active",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      sync_status: (isOnline && !blockNetwork) ? "synced" : "pending_create"
+      sync_status: isOnline ? "synced" : "pending_create"
     };
 
     await db.workers.add(newWorker);
     logSystem('success', `Worker profile for "${workerData.name.trim()}" registered in IndexedDB.`);
 
-    if (!isOnline || blockNetwork) {
+    if (!isOnline) {
       await db.sync_queue.add({
         action: 'CREATE',
         entity_type: 'workers',
@@ -223,13 +222,13 @@ export const useSyncEngine = () => {
       status: jobData.assignedWorkerId ? "assigned" : "open",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-      sync_status: (isOnline && !blockNetwork) ? "synced" : "pending_create"
+      sync_status: isOnline ? "synced" : "pending_create"
     };
 
     await db.jobs.add(newJob);
     logSystem('success', `Agricultural task "${jobData.title.trim()}" posted in IndexedDB.`);
 
-    if (!isOnline || blockNetwork) {
+    if (!isOnline) {
       await db.sync_queue.add({
         action: 'CREATE',
         entity_type: 'jobs',
@@ -255,7 +254,7 @@ export const useSyncEngine = () => {
 
     logSystem('warn', `Deleted item with ID: ${id} from IndexedDB table [${entity}].`);
 
-    if (!isOnline || blockNetwork) {
+    if (!isOnline) {
       await db.sync_queue.add({
         action: 'DELETE',
         entity_type: entity,
@@ -275,12 +274,12 @@ export const useSyncEngine = () => {
       worker_id: workerId,
       status: "assigned",
       updated_at: new Date().toISOString(),
-      sync_status: (isOnline && !blockNetwork) ? "synced" : "pending_update"
+      sync_status: isOnline ? "synced" : "pending_update"
     });
 
     logSystem('success', `Assigned worker [${workerId}] to Job task [${jobId}] locally.`);
 
-    if (!isOnline || blockNetwork) {
+    if (!isOnline) {
       const updatedJob = await db.jobs.get(jobId);
       await db.sync_queue.add({
         action: 'UPDATE',
@@ -301,12 +300,12 @@ export const useSyncEngine = () => {
       worker_id: null,
       status: "open",
       updated_at: new Date().toISOString(),
-      sync_status: (isOnline && !blockNetwork) ? "synced" : "pending_update"
+      sync_status: isOnline ? "synced" : "pending_update"
     });
 
     logSystem('info', `Unassigned worker from Job task [${jobId}] locally.`);
 
-    if (!isOnline || blockNetwork) {
+    if (!isOnline) {
       const updatedJob = await db.jobs.get(jobId);
       await db.sync_queue.add({
         action: 'UPDATE',
@@ -381,7 +380,7 @@ export const useSyncEngine = () => {
 
   // Background Auto-Sync trigger when returning online
   useEffect(() => {
-    const currentConnection = isOnline && !blockNetwork;
+    const currentConnection = isOnline;
     if (currentConnection) {
       setTimeout(() => logSystem('success', 'Network Status: ONLINE. Simulated connection to Postgres database active.'), 0);
       if (syncQueue.length > 0) {
@@ -389,10 +388,10 @@ export const useSyncEngine = () => {
         setTimeout(() => triggerSync(), 0);
       }
     } else {
-      setTimeout(() => logSystem('warn', `Network Status: OFFLINE (${blockNetwork ? 'Dev Simulated' : 'Hardware outage'}). Form submissions will cache locally in IndexedDB.`), 0);
+      setTimeout(() => logSystem('warn', 'Network Status: OFFLINE. Form submissions will cache locally in IndexedDB.'), 0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline, blockNetwork, syncQueue.length]);
+  }, [isOnline, syncQueue.length]);
 
   return {
     isOnline,
@@ -406,8 +405,6 @@ export const useSyncEngine = () => {
     jobs,
     syncQueue,
     syncLogs,
-    blockNetwork,
-    setBlockNetwork,
     consoleLogs,
     logSystem,
     refreshData,

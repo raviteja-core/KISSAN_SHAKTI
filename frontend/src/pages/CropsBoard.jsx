@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import { Plus, Sprout, Trash2, CheckCircle, Clock, AlertCircle } from 'lucide-react';
+import { Plus, Sprout, Trash2, CheckCircle, Clock } from 'lucide-react';
 
 export const CropsBoard = ({
   crops,
-  syncQueue,
   handleAddCrop,
   handleDeleteItem
 }) => {
@@ -186,25 +185,7 @@ export const CropsBoard = ({
           )}
         </div>
 
-        {/* Sync queue display */}
-        <div className="glass p-6 rounded-3xl border border-emerald-100/50 shadow-sm bg-slate-950/5">
-          <details className="group">
-            <summary className="text-xs font-bold text-slate-600 flex items-center justify-between cursor-pointer select-none">
-              <span className="flex items-center gap-2">
-                <AlertCircle size={15} className="text-amber-500" />
-                View sync_queue Local Store Content ({syncQueue.length} records pending)
-              </span>
-              <span className="transition-transform group-open:rotate-90">▶</span>
-            </summary>
-            <div className="mt-3 bg-slate-900 text-emerald-400 p-4 rounded-xl text-[10px] font-mono overflow-x-auto leading-relaxed max-h-48 shadow-inner">
-              {syncQueue.length === 0 ? (
-                <span className="text-slate-400 font-medium font-sans">Queue is empty. Everything synced with PostgreSQL database!</span>
-              ) : (
-                JSON.stringify(syncQueue, null, 2)
-              )}
-            </div>
-          </details>
-        </div>
+
       </div>
     </div>
   );

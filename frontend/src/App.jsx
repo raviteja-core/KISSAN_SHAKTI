@@ -9,7 +9,6 @@ import { useSpeechAssistant } from './voice/useSpeechAssistant';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Toast } from './components/Toast';
-import { StatusWidgets } from './components/StatusWidgets';
 import { VoiceAssistant } from './voice/VoiceAssistant';
 import { MatchmakerModal } from './components/MatchmakerModal';
 
@@ -58,8 +57,6 @@ function App() {
     jobs,
     syncQueue,
     syncLogs,
-    blockNetwork,
-    setBlockNetwork,
     consoleLogs,
     logSystem,
     refreshData,
@@ -150,7 +147,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Offline Status Banner */}
-      {(!isOnline || blockNetwork) && (
+      {!isOnline && (
         <div className="bg-amber-600 text-white px-4 py-2.5 text-center text-sm font-semibold flex items-center justify-center gap-2 shadow-inner animate-pulse transition-all duration-300 z-50">
           <WifiOff size={16} />
           <span>Offline mode active. Form submits will save locally to IndexedDB & sync queue.</span>
@@ -161,27 +158,11 @@ function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        blockNetwork={blockNetwork}
-        setBlockNetwork={setBlockNetwork}
         isOnline={isOnline}
-        setToast={setToast}
       />
 
       {/* Main Workspace Container */}
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        {/* Core System Status Widgets */}
-        <StatusWidgets
-          cropsCount={crops.length}
-          workersCount={workers.length}
-          jobsCount={jobs.length}
-          syncQueueCount={syncQueue.length}
-          isOnline={isOnline}
-          blockNetwork={blockNetwork}
-          lastSyncTime={lastSyncTime}
-          syncing={syncing}
-          triggerSync={triggerSync}
-        />
 
         {/* KissanShakthi Voice AI Assistant section */}
         {(activeTab === 'workers' || activeTab === 'jobs') && (
@@ -203,7 +184,6 @@ function App() {
         {activeTab === 'dashboard' && (
           <CropsBoard
             crops={crops}
-            syncQueue={syncQueue}
             handleAddCrop={handleAddCrop}
             handleDeleteItem={handleDeleteItem}
           />
@@ -213,7 +193,6 @@ function App() {
         {activeTab === 'workers' && (
           <WorkersRegistry
             workers={workers}
-            syncQueue={syncQueue}
             workerName={workerName}
             setWorkerName={setWorkerName}
             workerPhone={workerPhone}
