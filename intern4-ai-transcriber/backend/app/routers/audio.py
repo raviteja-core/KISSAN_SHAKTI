@@ -10,12 +10,14 @@ Intern 4 - AI Voice (Transcriber) | KissanShakti
 """
 
 import os
+import time
 import shutil
 from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 from pydantic import BaseModel
 
 from app.services.transcriber import transcribe_audio_file
 from app.services.session_store import save_chunk, assemble_session, cleanup_session
+from app.services.pipeline_optimizer import transcribe_with_cache, record_upload_speed
 from app.utils.text_formatter import format_transcript
 
 router = APIRouter()
@@ -42,19 +44,27 @@ async def upload_chunk(
     if len(chunk_bytes) == 0:
         raise HTTPException(status_code=400, detail="Empty audio chunk received.")
 
+    upload_start = time.perf_counter()
+
     # Persist chunk to disk
     save_chunk(session_id, chunk_index, chunk_bytes)
+
+    upload_elapsed = time.perf_counter() - upload_start
+    record_upload_speed(len(chunk_bytes), upload_elapsed)
 
     # For very short chunks we skip partial transcription to save latency
     partial_transcript = None
     if len(chunk_bytes) > 10_000:  # ~10 KB threshold
         try:
-            partial_transcript = await transcribe_audio_file(
+            partial_transcript, was_cached = await transcribe_with_cache(
                 chunk_bytes, mime_type, partial=True
             )
         except Exception:
             # Partial transcription failure is non-fatal
             partial_transcript = None
+            was_cached = False
+    else:
+        was_cached = False
 
     return {
         "status": "received",
@@ -62,6 +72,7 @@ async def upload_chunk(
         "chunk_index": chunk_index,
         "bytes_received": len(chunk_bytes),
         "partial_transcript": partial_transcript,
+        "cached": was_cached,
     }
 
 
