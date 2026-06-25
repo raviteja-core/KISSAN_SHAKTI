@@ -1,6 +1,6 @@
 import React from 'react';
 import { Mic, Square, Play, CheckCircle } from 'lucide-react';
-import { WORKER_PRESETS, JOB_PRESETS } from './presets';
+import { WORKER_PRESETS, JOB_PRESETS, EQUIPMENT_PRESETS } from './presets';
 
 export const VoiceAssistant = ({
   isRecording,
@@ -14,7 +14,12 @@ export const VoiceAssistant = ({
   applyVoiceEntities,
   logSystem
 }) => {
-  const currentPresets = speechActiveSection === 'worker' ? WORKER_PRESETS : JOB_PRESETS;
+  const currentPresets = 
+    speechActiveSection === 'worker' 
+      ? WORKER_PRESETS 
+      : speechActiveSection === 'equipment'
+        ? EQUIPMENT_PRESETS
+        : JOB_PRESETS;
 
   return (
     <div className="glass p-6 rounded-3xl border border-emerald-100 shadow-md mb-8">
@@ -34,7 +39,7 @@ export const VoiceAssistant = ({
                 speechActiveSection === 'worker' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Worker Registration Mode
+              Worker Mode
             </button>
             <button 
               onClick={() => setSpeechActiveSection('job')}
@@ -42,7 +47,15 @@ export const VoiceAssistant = ({
                 speechActiveSection === 'job' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
-              Task Posting Mode
+              Task Mode
+            </button>
+            <button 
+              onClick={() => setSpeechActiveSection('equipment')}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                speechActiveSection === 'equipment' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              Equipment Mode
             </button>
           </div>
         </div>
@@ -157,7 +170,7 @@ export const VoiceAssistant = ({
               className="w-full mt-3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 cursor-pointer shadow-md transition-all"
             >
               <CheckCircle size={12} />
-              <span>Auto-Fill {speechActiveSection === 'worker' ? 'Laborer' : 'Task'} Form</span>
+              <span>Auto-Fill {speechActiveSection === 'worker' ? 'Labourer' : 'Task'} Form</span>
             </button>
           )}
         </div>

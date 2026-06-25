@@ -3,5 +3,7 @@ export const TABS = {
   WORKERS: 'workers',
   JOBS: 'jobs',
   SYNC_AUDIT: 'sync_audit',
-  SCHEMA: 'schema'
+  SCHEMA: 'schema',
+  EQUIPMENT: 'equipment'
 };
+

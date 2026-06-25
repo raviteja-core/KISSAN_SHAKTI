@@ -52,7 +52,7 @@ export const parseSpeechText = (text) => {
   }
 
   let name = '';
-  const nameMatch = text.match(/(?:worker|laborer|labor|name|register)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
+  const nameMatch = text.match(/(?:worker|laborer|labourer|labor|labour|name|register)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/i);
   if (nameMatch) {
     name = nameMatch[1];
   } else {

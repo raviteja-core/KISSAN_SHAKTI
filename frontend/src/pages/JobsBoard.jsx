@@ -24,6 +24,7 @@ export const JobsBoard = ({
   handleAddJob,
   handleDeleteItem,
   openMatchmaker,
+  assignWorkerToJob,
   unassignWorker,
   logSystem
 }) => {
@@ -236,7 +237,6 @@ export const JobsBoard = ({
         <div className="glass p-6 rounded-3xl border border-emerald-100/50 shadow-sm">
           <h2 className="text-base font-extrabold text-slate-800 mb-4 flex items-center justify-between">
             <span>Farming Tasks Board: <code className="text-xs text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">jobs</code></span>
-            <span className="text-xs text-slate-400 font-medium">Dexie Local Storage</span>
           </h2>
 
           {jobs.length === 0 ? (
@@ -284,7 +284,7 @@ export const JobsBoard = ({
 
                     <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4 text-xs">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-slate-400 font-semibold">Assigned Laborer:</span>
+                        <span className="text-slate-400 font-semibold">Assigned Labourer:</span>
                         {workerMatch ? (
                           <div className="flex items-center gap-1.5">
                             <span className="bg-emerald-50 text-emerald-800 text-[10px] px-2.5 py-0.5 rounded-md border border-emerald-100 font-extrabold">
@@ -298,16 +298,40 @@ export const JobsBoard = ({
                             </button>
                           </div>
                         ) : (
-                          <div className="flex items-center gap-2">
-                            <span className="bg-slate-100 text-slate-600 text-[10px] px-2.5 py-0.5 rounded-md border border-slate-200 font-extrabold uppercase">
-                              Open
-                            </span>
-                            <button
-                              onClick={() => openMatchmaker(job)}
-                              className="text-xs text-emerald-700 hover:text-emerald-800 font-extrabold flex items-center gap-0.5 hover:underline cursor-pointer"
-                            >
-                              <Search size={11} /> Find Matches
-                            </button>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="bg-slate-100 text-slate-600 text-[10px] px-2.5 py-0.5 rounded-md border border-slate-200 font-extrabold uppercase">
+                                Open
+                              </span>
+                              <button
+                                onClick={() => openMatchmaker(job)}
+                                className="text-xs text-emerald-700 hover:text-emerald-800 font-extrabold flex items-center gap-0.5 hover:underline cursor-pointer"
+                              >
+                                <Search size={11} /> Find Matches
+                              </button>
+                            </div>
+                            {job.applicants && job.applicants.length > 0 && (
+                              <div className="mt-2 flex flex-col gap-1.5 border-t border-slate-100 pt-2 w-full">
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Pending Applicants ({job.applicants.length}):</span>
+                                <div className="flex flex-wrap gap-2">
+                                  {job.applicants.map(app => {
+                                    const applicantWorker = workers.find(w => w.id === app.worker_id);
+                                    if (!applicantWorker) return null;
+                                    return (
+                                      <div key={app.worker_id} className="flex items-center gap-2 bg-indigo-50 border border-indigo-100 px-2.5 py-1.5 rounded-lg shadow-sm">
+                                        <span className="text-[11px] font-extrabold text-indigo-800">{applicantWorker.name}</span>
+                                        <button 
+                                          onClick={() => assignWorkerToJob(job.id, app.worker_id)}
+                                          className="text-[9px] bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded cursor-pointer transition font-bold shadow-sm"
+                                        >
+                                          Accept
+                                        </button>
+                                      </div>
+                                    )
+                                  })}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

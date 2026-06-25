@@ -122,7 +122,6 @@ export const CropsBoard = ({
         <div className="glass p-6 rounded-3xl border border-emerald-100/50 shadow-sm">
           <h2 className="text-base font-extrabold text-slate-800 mb-4 flex items-center justify-between">
             <span>Persistent Crops Table: <code className="text-xs text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">crops</code></span>
-            <span className="text-xs text-slate-400 font-medium">Dexie Local Storage</span>
           </h2>
 
           {crops.length === 0 ? (

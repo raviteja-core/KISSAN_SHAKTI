@@ -200,13 +200,7 @@ export const AdminConsole = () => {
                         <div className="flex items-center justify-between font-semibold text-slate-700">
                           <div className="flex items-center gap-2">
                             <FileText size={14} className="text-slate-400" />
-                            {req.document_url ? (
-                              <a href={req.document_url} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:underline truncate max-w-[150px] font-bold">
-                                View Uploaded Document
-                              </a>
-                            ) : (
-                              <span className="truncate max-w-[150px]">Identity_Proof_{req.role}.pdf</span>
-                            )}
+                            <span className="truncate max-w-[150px]">Identity_Proof_{req.role}.pdf</span>
                           </div>
                           <button 
                             onClick={() => setPreviewDoc(req)}
@@ -412,20 +406,9 @@ export const AdminConsole = () => {
                 </div>
                 <div className="col-span-2 space-y-1">
                   <span className="text-[9px] text-slate-400 block font-bold uppercase">Verified Document Reference</span>
-                  {previewDoc.document_url ? (
-                    <a 
-                      href={previewDoc.document_url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[10px] text-blue-700 hover:underline font-bold bg-white px-2 py-1.5 rounded border border-slate-100 block truncate text-center"
-                    >
-                      Open identity document in new tab (Supabase Storage)
-                    </a>
-                  ) : (
-                    <code className="text-[10px] text-emerald-800 font-bold bg-white px-2 py-1.5 rounded border border-slate-100 block truncate">
-                      Identity_Proof_{previewDoc.role}.pdf
-                    </code>
-                  )}
+                  <code className="text-[10px] text-emerald-800 font-bold bg-white px-2 py-1.5 rounded border border-slate-100 block truncate">
+                    Identity_Proof_{previewDoc.role}.pdf
+                  </code>
                 </div>
               </div>
 
