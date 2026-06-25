@@ -23,7 +23,7 @@ export const VerificationGate = () => {
     }
   };
 
-  const handleStartVerification = (e) => {
+  const handleStartVerification = async (e) => {
     e.preventDefault();
     if (!docFile) {
       setUploadError("Please upload an identity document to proceed.");
@@ -31,13 +31,18 @@ export const VerificationGate = () => {
     }
 
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const uploadRes = await api.uploadDocument(user.id, docFile);
       updateVerification({ 
         verificationStep: 'blacklist_scan',
-        region: region
+        region: region,
+        document_url: uploadRes.url
       });
+    } catch (err) {
+      setUploadError(err.message || "Failed to upload identity document.");
+    } finally {
       setLoading(false);
-    }, 1500);
+    }
   };
 
   const simulateBlacklistCheck = async (shouldPass) => {

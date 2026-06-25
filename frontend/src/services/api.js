@@ -52,6 +52,20 @@ export const api = {
     return await res.json();
   },
 
+  uploadDocument: async (userId, file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${BASE_URL}/platform/upload-document?user_id=${userId}`, {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.detail || 'Failed to upload document');
+    }
+    return await res.json();
+  },
+
   sendOtp: async (phone) => {
     const res = await fetch(`${BASE_URL}/auth/otp/send`, {
       method: 'POST',
