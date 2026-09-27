@@ -1,4 +1,6 @@
-export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const rawEnvUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1').trim();
+const trimmedUrl = rawEnvUrl.replace(/\/+$/, '');
+export const BASE_URL = trimmedUrl.endsWith('/api/v1') ? trimmedUrl : `${trimmedUrl}/api/v1`;
 
 export const api = {
   // Auth
@@ -10,16 +12,24 @@ export const api = {
       phone: !isEmail ? identifier : null,
       password
     };
-    const res = await fetch(`${BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || 'Login failed');
+    try {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.detail || 'Login failed');
+      }
+      return await res.json();
+    } catch (err) {
+      if (err.name === 'TypeError' && (err.message.includes('fetch') || err.message.includes('NetworkError'))) {
+        console.error(`[Network Error] Failed to reach backend at: ${BASE_URL}/auth/login`);
+        throw new Error(`Network Error: Cannot reach ${BASE_URL}. If Render is asleep, wait ~45s and retry. Check VITE_API_BASE_URL in Netlify.`);
+      }
+      throw err;
     }
-    return await res.json();
   },
   
   register: async (data) => {
