@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.routes import auth, crops, jobs, workers, sync, matches, platform, audio
+from app.api.v1.routes import auth, crops, jobs, workers, sync, matches, platform, audio, intent
 
 app = FastAPI(title="KissanShakti Backend", version="1.0.0")
 
@@ -21,6 +21,7 @@ app.include_router(matches.router, prefix="/api/v1/matches", tags=["matches"])
 app.include_router(sync.router, prefix="/api/v1/sync", tags=["sync"])
 app.include_router(platform.router, prefix="/api/v1/platform", tags=["platform"])
 app.include_router(audio.router, prefix="/api/v1/audio", tags=["audio"])
+app.include_router(intent.router, prefix="/api/v1/intent", tags=["intent"])
 
 
 @app.get("/")

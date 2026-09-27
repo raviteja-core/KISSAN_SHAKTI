@@ -25,7 +25,7 @@ class CropCreate(CropBase):
 class CropOut(CropBase):
     id: str
     farmer_id: str
-    location: str
+    location: Optional[str] = "Maharashtra"
     status: str
     created_at: str
     updated_at: str

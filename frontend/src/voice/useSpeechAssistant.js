@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { parseSpeechText } from './speechParser';
 import { WORKER_PRESETS, JOB_PRESETS } from './presets';
+import { api } from '../services/api';
 
 export const useSpeechAssistant = (activeTab) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -33,11 +34,32 @@ export const useSpeechAssistant = (activeTab) => {
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
 
-    recognition.onresult = (event) => {
+    recognition.onresult = async (event) => {
       const textTranscribed = event.results[0][0].transcript;
       setSpeechText(textTranscribed);
       logSystem('success', `Voice recognized: "${textTranscribed}"`);
       
+      try {
+        const intentResult = await api.parseIntent(textTranscribed);
+        if (intentResult && intentResult.entities) {
+          const e = intentResult.entities;
+          const mergedEntities = {
+            name: e.name || '',
+            phone: e.phone || '',
+            rate: e.rate || '',
+            skills: e.skills || [],
+            location: e.location || '',
+            title: e.title || '',
+            desc: e.desc || textTranscribed
+          };
+          setRecognizedEntities(mergedEntities);
+          logSystem('info', `AI Intent (${intentResult.backend_used}): ${intentResult.intent}`);
+          return;
+        }
+      } catch (err) {
+        logSystem('warn', `Backend intent parser fallback: ${err.message}`);
+      }
+
       const entities = parseSpeechText(textTranscribed);
       setRecognizedEntities(entities);
       logSystem('info', `Voice AI Parsed: ${JSON.stringify(entities)}`);
@@ -66,15 +88,37 @@ export const useSpeechAssistant = (activeTab) => {
       clearTimeout(simulationTimeoutRef.current);
     }
 
-    simulationTimeoutRef.current = setTimeout(() => {
+    simulationTimeoutRef.current = setTimeout(async () => {
       setIsRecording(false);
       setSpeechText(text);
       
+      try {
+        const intentResult = await api.parseIntent(text);
+        if (intentResult && intentResult.entities) {
+          const e = intentResult.entities;
+          const mergedEntities = {
+            name: e.name || '',
+            phone: e.phone || '',
+            rate: e.rate || '',
+            skills: e.skills || [],
+            location: e.location || '',
+            title: e.title || '',
+            desc: e.desc || text
+          };
+          setRecognizedEntities(mergedEntities);
+          logSystem('success', `Voice AI Intent (${intentResult.backend_used}): ${intentResult.intent}`);
+          simulationTimeoutRef.current = null;
+          return;
+        }
+      } catch {
+        // Fallback to local rule-based parser
+      }
+
       const entities = parseSpeechText(text);
       setRecognizedEntities(entities);
       logSystem('success', `Simulated Voice AI Transcription complete.`);
       simulationTimeoutRef.current = null;
-    }, 1800);
+    }, 1200);
   };
 
   const handleToggleSpeech = (logSystem) => {

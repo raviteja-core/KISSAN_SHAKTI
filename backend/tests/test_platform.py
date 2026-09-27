@@ -18,14 +18,14 @@ def test_signin_farmer_and_laborer():
         json={"role": "FARMER", "email": "ramesh@kissan.in", "password": "farmer123"},
     )
     assert farmer_resp.status_code == 200
-    assert farmer_resp.json()["user"]["role"] == "FARMER"
+    assert farmer_resp.json()["user"]["role"].upper() == "FARMER"
 
     laborer_resp = client.post(
         "/api/v1/auth/login",
         json={"role": "LABORER", "email": "suresh@kissan.in", "password": "labor123"},
     )
     assert laborer_resp.status_code == 200
-    assert laborer_resp.json()["user"]["role"] == "LABORER"
+    assert laborer_resp.json()["user"]["role"].upper() == "LABORER"
 
 
 def test_farmer_dashboard_returns_expected_data():

@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:8000/api/v1';
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export const api = {
   // Auth
@@ -357,6 +357,19 @@ export const api = {
     return await res.json();
   },
 
+  // Job Assignments
+  assignWorker: async (jobId, workerId) => {
+    const res = await fetch(`${BASE_URL}/jobs/${jobId}/assign?worker_id=${workerId}`, { method: 'POST' });
+    if (!res.ok) throw new Error('Failed to assign worker');
+    return await res.json();
+  },
+
+  unassignWorker: async (jobId) => {
+    const res = await fetch(`${BASE_URL}/jobs/${jobId}/unassign`, { method: 'DELETE' });
+    if (!res.ok) throw new Error('Failed to unassign worker');
+    return await res.json();
+  },
+
   // Voice Session
   createVoiceSession: async (data) => {
     const res = await fetch(`${BASE_URL}/platform/voice-sessions`, {
@@ -365,6 +378,68 @@ export const api = {
       body: JSON.stringify(data)
     });
     if (!res.ok) throw new Error('Failed to create voice session');
+    return await res.json();
+  },
+
+  // AI Intent Parser
+  parseIntent: async (transcript, language = 'en', sessionId = null) => {
+    const res = await fetch(`${BASE_URL}/intent/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        transcript,
+        language,
+        session_id: sessionId || `session_${Date.now()}`
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || 'Failed to parse speech intent');
+    }
+    return await res.json();
+  },
+
+  // Audio Chunk Streaming & Finalization
+  uploadAudioChunk: async (audioBlob, sessionId, chunkIndex, mimeType = 'audio/webm') => {
+    const formData = new FormData();
+    formData.append('audio', audioBlob, `chunk_${chunkIndex}.webm`);
+    formData.append('session_id', sessionId);
+    formData.append('chunk_index', String(chunkIndex));
+    formData.append('mime_type', mimeType);
+
+    const res = await fetch(`${BASE_URL}/audio/chunk`, {
+      method: 'POST',
+      body: formData
+    });
+    if (!res.ok) throw new Error('Failed to upload audio chunk');
+    return await res.json();
+  },
+
+  finalizeAudioSession: async (sessionId, language = 'en-IN', userId = null) => {
+    const res = await fetch(`${BASE_URL}/audio/finalize`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        session_id: sessionId,
+        language,
+        user_id: userId
+      })
+    });
+    if (!res.ok) throw new Error('Failed to finalize audio session');
+    return await res.json();
+  },
+
+  translateText: async (text, sourceLang = 'en-IN', targetLang = 'hi-IN') => {
+    const res = await fetch(`${BASE_URL}/audio/translate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        text,
+        source_lang: sourceLang,
+        target_lang: targetLang
+      })
+    });
+    if (!res.ok) throw new Error('Failed to translate text');
     return await res.json();
   }
 };

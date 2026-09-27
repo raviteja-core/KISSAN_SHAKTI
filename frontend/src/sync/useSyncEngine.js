@@ -388,10 +388,7 @@ export const useSyncEngine = () => {
   const assignWorkerToJob = async (jobId, workerId) => {
     if (isOnline) {
       try {
-        await api.updateApplication(jobId, 'ACCEPTED'); // wait, the application endpoint accepts job assignment
-        // Or directly call assign endpoint:
-        const response = await fetch(`http://localhost:8000/api/v1/jobs/${jobId}/assign?worker_id=${workerId}`, { method: 'POST' });
-        if (!response.ok) throw new Error("Failed to assign worker.");
+        await api.assignWorker(jobId, workerId);
         logSystem('success', `Assigned worker to job in Supabase.`);
       } catch (err) {
         logSystem('error', `Failed to assign worker online: ${err.message}`);
@@ -412,8 +409,7 @@ export const useSyncEngine = () => {
   const unassignWorker = async (jobId) => {
     if (isOnline) {
       try {
-        const response = await fetch(`http://localhost:8000/api/v1/jobs/${jobId}/unassign`, { method: 'DELETE' });
-        if (!response.ok) throw new Error("Failed to unassign worker.");
+        await api.unassignWorker(jobId);
         logSystem('success', `Unassigned worker from job in Supabase.`);
       } catch (err) {
         logSystem('error', `Failed to unassign worker online: ${err.message}`);
